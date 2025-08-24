@@ -134,6 +134,14 @@
             transform: translateY(0);
         }
 
+        .login-button:disabled {
+            background-color: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .demo-accounts {
             margin-top: 30px;
             padding: 20px;
@@ -215,76 +223,144 @@
             <button type="submit" class="login-button">로그인</button>
         </form>
 
-        <div class="status-message" id="statusMessage"></div>
+        <div class="status-message" id="errorMessage"></div>
 
         <!-- 데모용 계정 정보 -->
         <div class="demo-accounts">
             <h3>📝 데모 계정</h3>
-            <div class="demo-account">
+            <div class="demo-account" data-username="student1" data-password="pass123">
                 <span><strong>학생:</strong> student1</span>
                 <span>pass123</span>
             </div>
-            <div class="demo-account">
+            <div class="demo-account" data-username="admin" data-password="admin123">
                 <span><strong>관리자:</strong> admin</span>
                 <span>admin123</span>
             </div>
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const statusMessage = document.getElementById('statusMessage');
-            
-            // 간단한 로그인 검증 (실제 프로젝트에서는 서버에서 처리)
-            if (username === 'admin' && password === 'admin123') {
-                showMessage('관리자로 로그인되었습니다! 관리자 페이지로 이동합니다...', 'success');
-                setTimeout(() => {
-                    // 실제로는 관리자 페이지로 이동
-                    alert('관리자 페이지로 이동 (아직 구현 전)');
-                }, 1500);
-            } else if (username === 'student1' && password === 'pass123') {
-                showMessage('학생으로 로그인되었습니다! 학생 페이지로 이동합니다...', 'success');
-                setTimeout(() => {
-                    // 실제로는 학생 페이지로 이동
-                    alert('학생 페이지로 이동 (아직 구현 전)');
-                }, 1500);
-            } else if (username === '' || password === '') {
-                showMessage('아이디와 비밀번호를 모두 입력해주세요.', 'error');
-            } else {
-                showMessage('아이디 또는 비밀번호가 올바르지 않습니다.', 'error');
-            }
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase 설정 (환경변수는 서버사이드에서만 작동하므로, 일단 직접 입력)
+        // 실제 배포 시에는 Vercel Functions를 통해 환경변수를 사용해야 합니다
+        const firebaseConfig = {
+            // 여기에 실제 Firebase 설정값을 입력해야 합니다
+            // 임시로 placeholder 값들
+            apiKey: "placeholder-api-key",
+            authDomain: "placeholder.firebaseapp.com", 
+            projectId: "placeholder-project",
+            storageBucket: "placeholder.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "placeholder-app-id"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', handleLogin);
+
+            // 데모 계정 클릭 이벤트
+            document.querySelectorAll('.demo-account').forEach(account => {
+                account.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    const password = this.getAttribute('data-password');
+                    document.getElementById('username').value = username;
+                    document.getElementById('password').value = password;
+                });
+            });
         });
 
-        function showMessage(message, type) {
-            const statusMessage = document.getElementById('statusMessage');
-            statusMessage.textContent = message;
-            statusMessage.className = `status-message ${type}`;
-            statusMessage.style.display = 'block';
+        // 로그인 처리 함수
+        async function handleLogin(event) {
+            event.preventDefault();
             
-            if (type === 'error') {
-                setTimeout(() => {
-                    statusMessage.style.display = 'none';
-                }, 3000);
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                showError('아이디와 비밀번호를 입력해주세요.');
+                return;
+            }
+
+            try {
+                showLoading();
+
+                // 관리자 계정 확인
+                if (username === 'admin' && password === 'admin123') {
+                    sessionStorage.setItem('userType', 'admin');
+                    sessionStorage.setItem('username', username);
+                    showSuccess('관리자로 로그인되었습니다!');
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1000);
+                    return;
+                }
+
+                // 학생 계정 확인 (일단 하드코딩된 테스트 계정)
+                if (username === 'student1' && password === 'pass123') {
+                    sessionStorage.setItem('userType', 'student');
+                    sessionStorage.setItem('username', username);
+                    showSuccess('학생으로 로그인되었습니다!');
+                    setTimeout(() => {
+                        window.location.href = 'student.html';
+                    }, 1000);
+                    return;
+                }
+
+                // Firebase에서 학생 계정 확인 (나중에 구현)
+                // const studentQuery = query(
+                //     collection(db, 'students'),
+                //     where('username', '==', username),
+                //     where('password', '==', password)
+                // );
+                // const querySnapshot = await getDocs(studentQuery);
+                // ... Firebase 로직
+
+                showError('아이디 또는 비밀번호가 잘못되었습니다.');
+
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                showError('로그인 중 오류가 발생했습니다.');
+            } finally {
+                hideLoading();
             }
         }
 
-        // 데모 계정 클릭 시 자동 입력
-        document.querySelectorAll('.demo-account').forEach(account => {
-            account.addEventListener('click', function() {
-                const accountText = this.textContent;
-                if (accountText.includes('student1')) {
-                    document.getElementById('username').value = 'student1';
-                    document.getElementById('password').value = 'pass123';
-                } else if (accountText.includes('admin')) {
-                    document.getElementById('username').value = 'admin';
-                    document.getElementById('password').value = 'admin123';
-                }
-            });
-        });
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.className = 'status-message error';
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.className = 'status-message success';
+            errorDiv.style.display = 'block';
+        }
+
+        function showLoading() {
+            const button = document.querySelector('.login-button');
+            button.disabled = true;
+            button.textContent = '로그인 중...';
+        }
+
+        function hideLoading() {
+            const button = document.querySelector('.login-button');
+            button.disabled = false;
+            button.textContent = '로그인';
+        }
     </script>
 </body>
 </html>

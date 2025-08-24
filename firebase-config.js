@@ -1,0 +1,23 @@
+
+// Firebase 설정 및 초기화
+import { initializeApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+
+// Firebase 설정 정보 (Vercel 환경변수에서 안전하게 가져오기)
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
+};
+
+// Firebase 앱 초기화
+const app = initializeApp(firebaseConfig);
+
+// Firestore 데이터베이스 초기화
+export const db = getFirestore(app);
+
+// 앱 객체도 export
+export default app;

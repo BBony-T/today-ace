@@ -1,23 +1,20 @@
+// firebase-config.js - CDN 버전
 
-// Firebase 설정 및 초기화
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-
-// Firebase 설정 정보 (Vercel 환경변수에서 안전하게 가져오기)
+// Firebase 설정 정보
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
+  apiKey: "AIzaSyA50L0NZ3EFHCblNGJLZlpJnt60UyyNS2I",
+  authDomain: "today-ace.firebaseapp.com",
+  projectId: "today-ace",
+  storageBucket: "today-ace.firebasestorage.app",
+  messagingSenderId: "454166755043",
+  appId: "1:454166755043:web:935f7b3c94f9f0b59eb7d6"
 };
 
-// Firebase 앱 초기화
-const app = initializeApp(firebaseConfig);
+// Firebase 초기화 (CDN 방식)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Firestore 데이터베이스 초기화
-export const db = getFirestore(app);
+// 다른 파일에서 사용할 수 있도록 전역 변수로 설정
+window.firebaseDb = db;
 
-// 앱 객체도 export
-export default app;
+console.log('Firebase 연결 완료!');

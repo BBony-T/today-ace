@@ -239,9 +239,9 @@
         </div>
     </div>
 
-    <!-- Firebase CDN 불러오기 -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase CDN 불러오기 (더 안정적인 버전) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <!-- Firebase 설정 -->
     <script>
@@ -256,10 +256,15 @@
         };
 
         // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        console.log('🔥 Firebase 연결 완료!');
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            console.log('🔥 Firebase 연결 완료!');
+            alert('🔥 Firebase 연결 테스트 - 성공!');
+        } catch (error) {
+            console.error('Firebase 초기화 오류:', error);
+            alert('❌ Firebase 연결 실패: ' + error.message);
+        }
     </script>
 
     <!-- 로그인 기능 JavaScript -->

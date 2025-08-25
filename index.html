@@ -239,28 +239,31 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase 설정 (환경변수는 서버사이드에서만 작동하므로, 일단 직접 입력)
-        // 실제 배포 시에는 Vercel Functions를 통해 환경변수를 사용해야 합니다
+    <!-- Firebase CDN 불러오기 -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase 설정 -->
+    <script>
+        // Firebase 설정 정보
         const firebaseConfig = {
-            // 여기에 실제 Firebase 설정값을 입력해야 합니다
-            // 임시로 placeholder 값들
-            apiKey: "placeholder-api-key",
-            authDomain: "placeholder.firebaseapp.com", 
-            projectId: "placeholder-project",
-            storageBucket: "placeholder.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "placeholder-app-id"
+            apiKey: "AIzaSyA50L0NZ3EFHCblNGJLZlpJnt60UyyNS2I",
+            authDomain: "today-ace.firebaseapp.com",
+            projectId: "today-ace",
+            storageBucket: "today-ace.firebasestorage.app",
+            messagingSenderId: "454166755043",
+            appId: "1:454166755043:web:935f7b3c94f9f0b59eb7d6"
         };
 
         // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
+        console.log('🔥 Firebase 연결 완료!');
+    </script>
+
+    <!-- 로그인 기능 JavaScript -->
+    <script>
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
@@ -277,7 +280,7 @@
             });
         });
 
-        // 로그인 처리 함수
+        // 로그인 처리 함수 (Firebase 연동)
         async function handleLogin(event) {
             event.preventDefault();
             
@@ -303,10 +306,17 @@
                     return;
                 }
 
-                // 학생 계정 확인 (일단 하드코딩된 테스트 계정)
-                if (username === 'student1' && password === 'pass123') {
+                // 테스트용 학생 계정들
+                const testStudents = {
+                    'student1': { name: '김학생', class: '1반', grade: '3학년' },
+                    'student2': { name: '이학생', class: '1반', grade: '3학년' },
+                    'student3': { name: '박학생', class: '2반', grade: '3학년' }
+                };
+
+                if (testStudents[username] && password === 'pass123') {
                     sessionStorage.setItem('userType', 'student');
                     sessionStorage.setItem('username', username);
+                    sessionStorage.setItem('studentInfo', JSON.stringify(testStudents[username]));
                     showSuccess('학생으로 로그인되었습니다!');
                     setTimeout(() => {
                         window.location.href = 'student.html';
@@ -314,14 +324,26 @@
                     return;
                 }
 
-                // Firebase에서 학생 계정 확인 (나중에 구현)
-                // const studentQuery = query(
-                //     collection(db, 'students'),
-                //     where('username', '==', username),
-                //     where('password', '==', password)
-                // );
-                // const querySnapshot = await getDocs(studentQuery);
-                // ... Firebase 로직
+                // Firebase에서 학생 계정 확인 (나중에 구현 예정)
+                // try {
+                //     const studentsRef = db.collection('students');
+                //     const query = studentsRef.where('username', '==', username).where('password', '==', password);
+                //     const snapshot = await query.get();
+                //     
+                //     if (!snapshot.empty) {
+                //         const studentData = snapshot.docs[0].data();
+                //         sessionStorage.setItem('userType', 'student');
+                //         sessionStorage.setItem('username', username);
+                //         sessionStorage.setItem('studentInfo', JSON.stringify(studentData));
+                //         showSuccess('학생으로 로그인되었습니다!');
+                //         setTimeout(() => {
+                //             window.location.href = 'student.html';
+                //         }, 1000);
+                //         return;
+                //     }
+                // } catch (firebaseError) {
+                //     console.error('Firebase 로그인 오류:', firebaseError);
+                // }
 
                 showError('아이디 또는 비밀번호가 잘못되었습니다.');
 
@@ -361,6 +383,17 @@
             button.disabled = false;
             button.textContent = '로그인';
         }
+
+        // Firebase 연결 테스트
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof firebase !== 'undefined') {
+                    console.log('✅ Firebase 로드 성공');
+                } else {
+                    console.error('❌ Firebase 로드 실패');
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
